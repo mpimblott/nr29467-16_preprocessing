@@ -8,7 +8,6 @@ import scipy.ndimage
 import matplotlib.pyplot as plt
 from skimage import exposure
 
-from preprocessing.files.file_handler import FileHandler
 from preprocessing.files import NPYHandler, TiffHandler, H5Handler
 
 def adaptive_histogram_equalization(
@@ -21,11 +20,13 @@ def adaptive_histogram_equalization(
 
 def denoise(
     data: np.ndarray,
+    output_path: Path,
+    sigma: float = 1.5,
 ):
-    # sample = data[data.shape[0]//2, :, :]
-    # plt.imshow(sample, cmap='gray')
-    # plt.savefig('denoise_original_sample.png')
-    # plt.close()
+    sample = data[data.shape[0]//2, :, :]
+    fix, axs = plt.subplots(1, 2, figsize=(5, 10))
+    axs[0].imshow(sample, cmap='gray')
+    axs[0].set_title('original')
     # sigma_vals = [1, 2, 3, 4, 5, 6, 7, 8, 9]
     # # create subplots
     # fig, axs = plt.subplots(1, len(sigma_vals), figsize=(1.5*len(sigma_vals),3))
@@ -37,20 +38,15 @@ def denoise(
     #     axs[i].imshow(x, cmap='gray')
     #     axs[i].set_title(f'sigma={sigma}')
     #     axs[i].axis('off')
-
     # # save the image
     # plt.savefig('denoise_gaussian.png')
     # plt.close()
     data = scipy.ndimage.gaussian_filter(
         data,
-        sigma=1.5,
+        sigma=sigma,
     )
+    after_sample = data[data.shape[0]//2, :, :]
+    axs[1].imshow(after_sample, cmap='gray')
+    axs[1].set_title('after')
+    plt.savefig(output_path / 'denoise_gaussian.png')
     return data
-
-def apply_denoise():
-    data_path = Path('/dls/science/users/jig77871/projects/projection2/outputs/clipped_up_preserve.h5')
-    data_handle = H5Handler(file=data_path)
-    data = data_handle.read()
-    # data = denoise(data)
-    output_handler = H5Handler()
-    output_handler.write(Path().absolute(), data, 'denoised')

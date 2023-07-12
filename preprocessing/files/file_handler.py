@@ -27,6 +27,10 @@ class FileHandler(ABC):
     def __init__(self, file: Path | None = None):
         self.path = file
 
+    def check_ext(self, path: Path) -> bool:
+        """check that the file extension is valid for this handler"""
+        return path.suffix in self.valid_ext
+
     @property
     @abstractmethod
     def valid_ext(self) -> Set:

@@ -1,12 +1,15 @@
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from scipy.signal import find_peaks
 
-def histogram(
+def clip_to_upper_hist(
     data: np.ndarray,
-    sdev_factor = 1.5
+    output_path: Path,
+    sdev_factor = 1.5,
+    bins: int = 600,
 ):
     '''
     Taken from https://stackoverflow.com/a/67153389 'is-there-a-way-i-can-find-the-range-of-local-maxima-of-histogram' answer by Max Pierini.
@@ -16,11 +19,11 @@ def histogram(
     '''
     Create a histogram of the initial data and create a line plot of the bin averages
     '''
-    hist = plt.hist(data, 600, density=True, alpha=.25)
+    hist = plt.hist(data, bins, density=True, alpha=.25)
     bin_means = hist[1][:-1] + np.diff(hist[1])[0] / 2
     density = hist[0]
     plt.plot(bin_means, density, linewidth=.5, color='r')
-    plt.savefig(f'initial_density_hist.png')
+    plt.savefig(f'{output_path}/initial_histogram.png')
     plt.close()
     '''
     Plot the moving average of the density to smooth out the peaks
@@ -47,7 +50,7 @@ def histogram(
     plt.axvline(bin_means[upper_peak], color='y', linewidth=1)
     plt.axvline(upper_cutoff, color='r', linewidth=1)
     plt.axvline(lower_cutoff, color='r', linewidth=1)
-    plt.savefig(f'moving_averages.png')
+    plt.savefig(f'{output_path}/moving_average.png')
     plt.close()
     data[data < lower_cutoff] = np.NaN
     data[data > upper_cutoff] = np.NaN
@@ -55,6 +58,20 @@ def histogram(
     valid_data = data != np.NaN
     plt.hist(data[valid_data], bins=256, density=True, alpha=.25)
     plt.axvline(bin_means[upper_peak], color='y', linewidth=1)
-    plt.savefig(f'preserved_information.png')
+    plt.savefig(f'{output_path}/clipped_histogram.png')
     plt.close()
     return (lower_cutoff, upper_cutoff)
+
+def apply_clip_to_mask(
+    data: np.ndarray,
+    mask: np.ndarray,
+    ignore_value: int = -100
+):
+    '''
+    Apply the clip to the mask by setting everywhere a NaN is present in the data to the ignore value
+    '''
+    # create a mask of everywhere the data is NaN
+    nan_mask = np.isnan(data)
+    # set everywhere the data is NaN to the ignore value
+    mask[nan_mask] = ignore_value
+    return mask
