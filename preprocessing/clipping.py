@@ -13,6 +13,7 @@ def clip_to_upper_hist(
     output_path: Path,
     sd_factor = 1.5,
     bins: int = 500,
+    tag: str = '',
 ):
     '''
     Taken from https://stackoverflow.com/a/67153389 'is-there-a-way-i-can-find-the-range-of-local-maxima-of-histogram' answer by Max Pierini.
@@ -28,7 +29,7 @@ def clip_to_upper_hist(
     bin_means = hist[1][:-1] + np.diff(hist[1])[0] / 2
     density = hist[0]
     plt.plot(bin_means, density, linewidth=.5, color='r')
-    plt.savefig(f'{output_path}/initial_histogram.png')
+    plt.savefig(f'{output_path}/{tag}_initial_histogram.png')
     plt.close()
     '''
     Plot the moving average of the density to smooth out the peaks
@@ -57,7 +58,7 @@ def clip_to_upper_hist(
     plt.axvline(bin_means[upper_peak], color='y', linewidth=1)
     plt.axvline(upper_cutoff, color='r', linewidth=1)
     plt.axvline(lower_cutoff, color='r', linewidth=1)
-    plt.savefig(f'{output_path}/moving_average.png')
+    plt.savefig(f'{output_path}/{tag}_moving_average.png')
     plt.close()
     data[data < lower_cutoff] = np.NaN
     data[data > upper_cutoff] = np.NaN
@@ -66,7 +67,7 @@ def clip_to_upper_hist(
     valid_data = data != np.NaN
     plt.hist(data[valid_data], bins=256, density=True, alpha=.25)
     plt.axvline(bin_means[upper_peak], color='y', linewidth=1)
-    plt.savefig(f'{output_path}/clipped_histogram.png')
+    plt.savefig(f'{output_path}/{tag}_clipped_histogram.png')
     plt.close()
     return (lower_cutoff, upper_cutoff)
 

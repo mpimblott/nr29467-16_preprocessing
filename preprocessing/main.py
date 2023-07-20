@@ -16,20 +16,25 @@ def clip(data_path, output_dir, sd_factor, output_type, rescale):
     data_path = Path(data_path)
     output_dir = Path(output_dir)
     handle = get_handler(data_path, file=data_path)
+
+    id_tag = f'{data_path.stem}_clipped'
+
     data = handle.read()
     lb, ub = clip_to_upper_hist(
         data.flatten(),
         output_dir,
         sd_factor=sd_factor,
+        tag=id_tag,
     )
-    data[data < lb] = np.NaN
+    data[data < lb] = lb
     data[data > ub] = ub
+
     print(f'min: {np.nanmin(data)}, max: {np.nanmax(data)}')
     print(f'rescale: {rescale}')
     if rescale:
         data = (data - np.nanmin(data)) / (np.nanmax(data) - np.nanmin(data))
         print(f'min: {np.nanmin(data)}, max: {np.nanmax(data)}')
-    out_path = output_dir / f'{data_path.stem}_clipped.{output_type}'
+    out_path = output_dir / f'{id_tag}.{output_type}'
     output_handler = get_handler(out_path)
     output_handler.write(
         out_path,
