@@ -19,7 +19,7 @@ tifffile = "^2023.7.10"
 scikit-image = "^0.21.0"
 
 [tool.poetry.scripts]
-cli = 'preprocessing.main:cli'
+clip = 'preprocessing.main:cli'
 
 [build-system]
 requires = ["poetry-core"]
