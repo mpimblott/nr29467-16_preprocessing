@@ -1,13 +1,13 @@
 [tool.poetry]
 name = "nr29467-16-preprocessing"
-version = "0.1.0"
+version = "0.2.0"
 description = "Preprocessing for segmentation"
 authors = ["Pimblott, Matthew (DLSLtd,RAL,LSCI) <matthew.pimblott@diamond.ac.uk>"]
 readme = "README.md"
 packages = [{include = "preprocessing"}]
 
 [tool.poetry.dependencies]
-python =  "3.11.3"
+python =  "^3.11"
 numpy = "^1.25.1"
 scipy = "^1.11.1"
 matplotlib = "^3.7.2"
@@ -19,7 +19,7 @@ tifffile = "^2023.7.10"
 scikit-image = "^0.21.0"
 
 [tool.poetry.scripts]
-clip = 'preprocessing.main:cli'
+preprocessing = 'preprocessing.main:cli'
 
 [build-system]
 requires = ["poetry-core"]
