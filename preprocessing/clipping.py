@@ -1,5 +1,6 @@
 from pathlib import Path
 import logging
+from typing import Literal
 
 import numpy as np
 import pandas as pd
@@ -14,6 +15,7 @@ def clip_to_upper_hist(
     sd_factor = 1.5,
     bins: int = 500,
     tag: str = '',
+    select_peak: Literal['upper', 'lower'] = 'upper'
 ):
     '''
     Taken from https://stackoverflow.com/a/67153389 'is-there-a-way-i-can-find-the-range-of-local-maxima-of-histogram' answer by Max Pierini.
@@ -48,14 +50,22 @@ def clip_to_upper_hist(
     logger.info('finding peaks')
     peaks, peak_properties = find_peaks(moving_avg, prominence=0.0001)
     peaks = peaks[np.argsort(peak_properties['prominences'])[-2:]]
+    lower_peak = peaks[np.argsort(bin_means[peaks])[0]]
     upper_peak = peaks[np.argsort(bin_means[peaks])[-1]]
-    upper_cutoff = bin_means[upper_peak] + sd_factor * sd
-    lower_cutoff = bin_means[upper_peak] - sd_factor * sd
+    logger.info(f'lower peak: {lower_peak}, upper peak: {upper_peak}')
+    match select_peak:
+        case 'lower':
+            peak = lower_peak
+        case 'upper':
+            peak = upper_peak
+
+    upper_cutoff = bin_means[peak] + sd_factor * sd
+    lower_cutoff = bin_means[peak] - sd_factor * sd
     print(f'lower cutoff: {lower_cutoff}, upper cutoff: {upper_cutoff}')
     # for i, peak in enumerate(peaks):
     #     print(f'prominence at peak {i} ({bin_means[peak]})', peak_prominences(moving_avg, [peak]))
     #     plt.axvline(bin_means[peak], color='g', linewidth=1)
-    plt.axvline(bin_means[upper_peak], color='y', linewidth=1)
+    plt.axvline(bin_means[peak], color='y', linewidth=1)
     plt.axvline(upper_cutoff, color='r', linewidth=1)
     plt.axvline(lower_cutoff, color='r', linewidth=1)
     plt.savefig(f'{output_path}/{tag}_moving_average.png')
@@ -66,7 +76,7 @@ def clip_to_upper_hist(
     # plot a histogram of the data after the cutoffs
     valid_data = data != np.NaN
     plt.hist(data[valid_data], bins=256, density=True, alpha=.25)
-    plt.axvline(bin_means[upper_peak], color='y', linewidth=1)
+    plt.axvline(bin_means[peak], color='y', linewidth=1)
     plt.savefig(f'{output_path}/{tag}_clipped_histogram.png')
     plt.close()
     return (lower_cutoff, upper_cutoff)

@@ -12,7 +12,8 @@ import preprocessing.image_processing as ip
 @click.option('-sd', '--sd_factor', default=1.5, help='How many standard deviations to clip')
 @click.option('-ot', '--output-type', default='h5', help='Output file type, h5 or tiff')
 @click.option('-r', '--rescale', is_flag=True, help='Rescale the data to [0, 1]', default=True)
-def clip(data_path, output_dir, sd_factor, output_type, rescale):
+@click.option('--peak', '-p', type=click.Choice(['lower', 'upper']), default='upper', help='The target peak to clip to')
+def clip(data_path, output_dir, sd_factor, output_type, rescale, peak):
     data_path = Path(data_path)
     output_dir = Path(output_dir)
     handle = get_handler(data_path, file=data_path)
@@ -25,6 +26,7 @@ def clip(data_path, output_dir, sd_factor, output_type, rescale):
         output_dir,
         sd_factor=sd_factor,
         tag=id_tag,
+        select_peak=peak,
     )
     data[data < lb] = lb
     data[data > ub] = ub
